@@ -4,16 +4,24 @@ services:
   catalog-service:
     depends_on:
       - polar-postgres
-    image: "ghcr.io/perinan/catalog-service:0.0.1-SNAPSHOT"
+      - config-server
+    image: "catalog-service:0.0.1-SNAPSHOT"
     container_name: "catalog-service"
     ports:
       - 9001:9001
       - 8001:8001
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
       - SPRING_PROFILES_ACTIVE=testdata
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=8001
+
+  config-server:
+    image: "config-service:0.0.1-SNAPSHOT"
+    container_name: "config-server"
+    ports:
+      - 8888:8888
 
   polar-postgres:
     image: "postgres:17.2"
