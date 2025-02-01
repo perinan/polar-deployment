@@ -1,3 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-db-script
+data:
+  init-db.sql: |
+    CREATE DATABASE polardb_catalog;
+    CREATE DATABASE polardb_order;
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,6 +24,10 @@ spec:
       labels:
         db: polar-postgres
     spec:
+      volumes:
+        - name: init-script
+          configMap:
+            name: init-db-script  # Nombre del ConfigMap con el script SQL
       containers:
         - name: polar-postgres
           image: postgres:17.2
@@ -21,8 +36,9 @@ spec:
               value: user
             - name: POSTGRES_PASSWORD
               value: password
-            - name: POSTGRES_DB
-              value: polardb_catalog
+          volumeMounts:
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
           resources:
             requests:
               cpu: 100m
